@@ -4,6 +4,9 @@ from transformers import (AutoTokenizer, AutoModelForSeq2SeqLM, Seq2SeqTrainer,
                           Seq2SeqTrainingArguments, DataCollatorForSeq2Seq)
 from sklearn.model_selection import train_test_split
 import wandb
+import torch
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # --- Configuration utilisateur ---
 MODEL_NAME = "google/flan-t5-small"
@@ -46,7 +49,7 @@ datasets = DatasetDict({
 
 # --- Tokenizer et modèle ---
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME)
+model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME).to(device)
 
 # --- Prétraitement ---
 def preprocess(example):
@@ -68,11 +71,11 @@ training_args = Seq2SeqTrainingArguments(
     lr_scheduler_type=SCHEDULER,
     warmup_steps=WARMUP_STEPS,
     logging_dir="./logs",
-    logging_steps=2,
+    logging_steps=50,
     save_strategy="epoch",
     report_to="wandb",
     eval_strategy="steps",
-    eval_steps=10,
+    eval_steps=200,
     run_name=RUN_NAME,
     fp16=True
 )
