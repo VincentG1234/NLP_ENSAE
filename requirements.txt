@@ -1,0 +1,8 @@
+transformers
+wandb
+openai
+pandas
+datasets
+scikit-learn
+torch
+accelerate
