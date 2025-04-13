@@ -3,6 +3,7 @@ from datasets import Dataset, DatasetDict
 from transformers import (AutoTokenizer, AutoModelForSeq2SeqLM, Seq2SeqTrainer,
                           Seq2SeqTrainingArguments, DataCollatorForSeq2Seq)
 from sklearn.model_selection import train_test_split
+from peft import get_peft_model, LoraConfig, TaskType
 import wandb
 import torch
 import os
@@ -10,21 +11,20 @@ import os
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 torch.cuda.empty_cache()
 
 # --- Configuration utilisateur ---
-MODEL_NAME = "google/flan-t5-base"
-OUTPUT_DIR = "./flan-t5-base-rewriting"
+MODEL_NAME = "google/flan-t5-large"
+OUTPUT_DIR = "./flan-t5-large-rewriting-lora-2"
 CSV_PATH = "data_folder/paired_queries_train.csv"  
-LEARNING_RATE = 3e-5
-EPOCHS = 3
-BATCH_SIZE = 8
+LEARNING_RATE = 5e-4
+EPOCHS = 5
+BATCH_SIZE = 16  # grâce à LoRA
 MAX_LENGTH = 128
 PROJECT_NAME = "NLP_ENSAE"
-RUN_NAME = "flan-t5-large-3epochs-gpu-1"
+RUN_NAME = "flan-t5-large-5epochs-lora"
 SCHEDULER = "linear"
-WARMUP_STEPS = 300
+WARMUP_STEPS = 275
 
 # --- Initialisation de W&B ---
 wandb.init(
@@ -46,7 +46,6 @@ wandb.init(
 df = pd.read_csv(CSV_PATH)
 train_df, val_df = train_test_split(df, test_size=0.05, random_state=42)
 
-
 datasets = DatasetDict({
     "train": Dataset.from_pandas(train_df.rename(columns={"noisy_query": "input", "rewritten": "target"})),
     "validation": Dataset.from_pandas(val_df.rename(columns={"noisy_query": "input", "rewritten": "target"}))
@@ -54,7 +53,19 @@ datasets = DatasetDict({
 
 # --- Tokenizer et modèle ---
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME).to(device)
+base_model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME)
+
+# --- Ajout de LoRA ---
+peft_config = LoraConfig(
+    r=32,
+    lora_alpha=64,
+    task_type=TaskType.SEQ_2_SEQ_LM,
+    lora_dropout=0.1,
+    bias="none"
+)
+
+model = get_peft_model(base_model, peft_config)
+model.print_trainable_parameters()
 
 # --- Prétraitement ---
 def preprocess(example):
@@ -83,6 +94,7 @@ training_args = Seq2SeqTrainingArguments(
     eval_strategy="steps",
     eval_steps=200,
     run_name=RUN_NAME,
+    fp16=False
 )
 
 # --- Trainer ---
