@@ -114,5 +114,10 @@ trainer.train()
 trainer.save_model(OUTPUT_DIR)
 tokenizer.save_pretrained(OUTPUT_DIR)
 
+# --- Log du modèle avec W&B Artifact ---
+artifact = wandb.Artifact(name=RUN_NAME, type="model")
+artifact.add_dir(OUTPUT_DIR)
+wandb.log_artifact(artifact)
+
 # --- Fin de session W&B ---
 wandb.finish()

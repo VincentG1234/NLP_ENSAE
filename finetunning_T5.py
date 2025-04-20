@@ -17,12 +17,12 @@ torch.cuda.empty_cache()
 MODEL_NAME = "google/flan-t5-base"
 OUTPUT_DIR = "./flan-t5-base-rewriting"
 CSV_PATH = "data_folder/paired_queries_train.csv"  
-LEARNING_RATE = 3e-5
+LEARNING_RATE = 0.00005
 EPOCHS = 3
 BATCH_SIZE = 8
 MAX_LENGTH = 128
 PROJECT_NAME = "NLP_ENSAE"
-RUN_NAME = "flan-t5-large-3epochs-gpu-1"
+RUN_NAME = "flan-t5-base-3epochs-gpu-2"
 SCHEDULER = "linear"
 WARMUP_STEPS = 300
 
@@ -58,7 +58,7 @@ model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME).to(device)
 
 # --- Prétraitement ---
 def preprocess(example):
-    input_text = "Improve the query: " + example["input"]
+    input_text = "Rephrase the query by adding synonyms in parentheses for important words (do not repeat): " + example["input"]
     target_text = example["target"]
     return tokenizer(input_text, text_target=target_text, truncation=True, max_length=MAX_LENGTH)
 
@@ -101,6 +101,11 @@ trainer.train()
 # --- Sauvegarde finale ---
 trainer.save_model(OUTPUT_DIR)
 tokenizer.save_pretrained(OUTPUT_DIR)
+
+# --- Log du modèle avec W&B Artifact ---
+artifact = wandb.Artifact(name=RUN_NAME, type="model")
+artifact.add_dir(OUTPUT_DIR)
+wandb.log_artifact(artifact)
 
 # --- Fin de session W&B ---
 wandb.finish()
