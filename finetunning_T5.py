@@ -14,15 +14,15 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.cuda.empty_cache()
 
 # --- Configuration utilisateur ---
-MODEL_NAME = "google/flan-t5-base"
-OUTPUT_DIR = "./flan-t5-base-rewriting"
+MODEL_NAME = "google/flan-t5-small"
+OUTPUT_DIR = "./flan-t5-small-rewriting_2"
 CSV_PATH = "data_folder/paired_queries_train.csv"  
-LEARNING_RATE = 0.00005
+LEARNING_RATE = 0.0001
 EPOCHS = 3
 BATCH_SIZE = 8
 MAX_LENGTH = 128
 PROJECT_NAME = "NLP_ENSAE"
-RUN_NAME = "flan-t5-base-3epochs-gpu-2"
+RUN_NAME = "flan-t5-small-3epochs-gpu-2"
 SCHEDULER = "linear"
 WARMUP_STEPS = 300
 
@@ -78,7 +78,7 @@ training_args = Seq2SeqTrainingArguments(
     warmup_steps=WARMUP_STEPS,
     logging_dir="./logs",
     logging_steps=50,
-    save_strategy="epoch",
+    save_strategy="no",
     report_to="wandb",
     eval_strategy="steps",
     eval_steps=200,

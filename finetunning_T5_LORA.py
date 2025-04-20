@@ -69,7 +69,7 @@ model.print_trainable_parameters()
 
 # --- Prétraitement ---
 def preprocess(example):
-    input_text = "Improve the query: " + example["input"]
+    input_text = "Rephrase the query by adding synonyms in parentheses for important words (do not repeat): " + example["input"]
     target_text = example["target"]
     return tokenizer(input_text, text_target=target_text, truncation=True, max_length=MAX_LENGTH)
 
@@ -89,7 +89,7 @@ training_args = Seq2SeqTrainingArguments(
     warmup_steps=WARMUP_STEPS,
     logging_dir="./logs",
     logging_steps=50,
-    save_strategy="epoch",
+    save_strategy="no",
     report_to="wandb",
     eval_strategy="steps",
     eval_steps=200,
