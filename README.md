@@ -10,32 +10,6 @@ This project provides a full pipeline for rewriting search queries to improve pe
 
 ---
 
-## 📁 Project Structure
-
-Directory structure:
-└── vincentg1234-nlp_ensae.git/
-    ├── README.md
-    ├── NB_analysis_data.ipynb
-    ├── requirements.txt
-    ├── data_engineering/
-    │   ├── load_data_hf.py
-    │   ├── noise_queries.py
-    │   └── write_refined_queries_api_call.py
-    ├── data_folder/
-    │   ├── paired_queries.csv
-    │   ├── paired_queries_test.csv
-    │   ├── paired_queries_train.csv
-    │   ├── raw_queries.csv
-    │   └── refined_queries.csv
-    ├── fine_tuning/
-    │   ├── distillation.py
-    │   ├── finetunning_T5.py
-    │   └── finetunning_T5_LORA.py
-    └── test/
-        ├── test_distill.py
-        └── test_predictions_distilled.csv
-
-
 
 ## 🚀 Training Commands
 
